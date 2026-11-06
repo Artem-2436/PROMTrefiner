@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PromptRefiner | Asinhrom & Xcortex</title>
+    <style>
+        :root {
+            --bg-color: #0f0f13;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --accent-color: #6d28d9; /* Purple for AI/Tech */
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1aa;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --radius-lg: 16px;
+            --radius-md: 12px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(109, 40, 217, 0.15) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(59, 130, 246, 0.1) 0%, transparent 20%);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            display: grid;
+            gap: 20px;
+        }
+
+        /* Liquid Glass Card Style */
+        .card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .card:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            background: linear-gradient(to right, #fff, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        p.subtitle {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Inputs & Textareas */
+        textarea {
+            width: 100%;
+            height: 150px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            color: white;
+            padding: 12px;
+            font-size: 1rem;
+            resize: vertical;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            border-color: var(--accent-color);
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        /* Buttons */
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--accent-color);
+            color: white;
+            flex-grow: 1;
+        }
+
+        .btn-primary:hover {
+            background: #5b21b6;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(109, 40, 217, 0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid var(--glass-border);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-copy {
+            background: var(--success);
+            color: white;
+        }
+        
+        .btn-copy:hover {
+            background: #059669;
+        }
+
+        /* Settings Section */
+        .settings-row {
+            display: flex;
+            gap: 10px;
+            align-items: end;
+            flex-wrap: wrap;
+        }
+        
+        input[type="password"], input[type="text"] {
+            flex-grow: 1;
+            min-width: 200px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            color: white;
+            padding: 10px;
+            outline: none;
+        }
+
+        select {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-md);
+            color: white;
+            padding: 10px;
+            outline: none;
+            cursor: pointer;
+            min-width: 200px;
+        }
+
+        optgroup {
+            background: #1a1a24;
+            color: white;
+        }
+        
+        option {
+            background: #1a1a24;
+            color: white;
+        }
+
+        /* Results Area */
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+            .settings-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            button {
+                width: 100%;
+            }
+        }
+
+        .score-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: conic-gradient(var(--accent-color) 0%, rgba(255,255,255,0.1) 0%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            position: relative;
+        }
+
+        .score-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            z-index: 2;
+        }
+
+        .feedback-list {
+            list-style: none;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .feedback-item {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .feedback-item strong {
+            color: white;
+        }
+
+        .hidden { display: none; }
+        
+        .loading-spinner {
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top: 3px solid var(--accent-color);
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>PromptRefiner</h1>
+        <p class="subtitle">Улучшай свои промпты с помощью ИИ • Powered by Asinhrom & Xcortex</p>
+    </header>
+
+    <!-- Settings Card -->
+    <div class="card">
+        <label>⚙️ Настройки Hugging Face API</label>
+        <div class="settings-row">
+            <input type="password" id="hfToken" placeholder="Вставь свой Access Token..." autocomplete="off">
+            
+            <!-- Updated Model Select with Groups -->
+            <select id="modelSelect">
+                <optgroup label="🔥 Топовые Open Source (Рекомендуется)">
+                    <option value="meta-llama/Meta-Llama-3-70B-Instruct" selected>Llama 3 70B Instruct</option>
+                    <option value="mistralai/Mixtral-8x7B-Instruct-v0.1">Mixtral 8x7B (Fast)</option>
+                    <option value="Qwen/Qwen2.5-Coder-32B-Instruct">Qwen2.5 Coder 32B</option>
+                </optgroup>
+                
+                <optgroup label="⚡ Быстрые / Легкие">
+                    <option value="microsoft/Phi-3-mini-4k-instruct">Phi-3 Mini (4K)</option>
+                    <option value="google/gemma-2-9b-it">Gemma 2 9B IT</option>
+                </optgroup>
+
+                <optgroup label="🧪 Старые / Для тестов">
+                    <option value="mistralai/Mistral-7B-Instruct-v0.2">Mistral 7B v0.2</option>
+                    <option value="facebook/opt-125m">OPT 125M (Test only)</option>
+                </optgroup>
+            </select>
+
+            <button class="btn-secondary" onclick="saveSettings()">Сохранить</button>
+        </div>
+        <small style="color:var(--text-secondary); display:block; margin-top:5px;">
+            ⚠️ Если получаешь ошибку 401/403: Убедись, что у тебя есть доступ к модели на huggingface.co и токен имеет права Read. Llama 3 обычно открыта всем.
+        </small>
+    </div>
+
+    <!-- Input Card -->
+    <div class="card">
+        <label>✍️ Твой исходный промпт</label>
+        <textarea id="promptInput" placeholder="Напиши здесь свой запрос к нейросети... Например: 'напиши код на python'"></textarea>
+        <div class="btn-group">
+            <button class="btn-primary" id="analyzeBtn" onclick="startAnalysis()">
+                <span id="btnText">Проанализировать и Улучшить</span>
+                <div id="spinner" class="loading-spinner hidden"></div>
+            </button>
+            <button class="btn-secondary" onclick="clearAll()">Очистить</button>
+        </div>
+    </div>
+
+    <!-- Results Card -->
+    <div class="card results-grid hidden" id="resultsContainer">
+        <!-- Left Column: Score & Tips -->
+        <div>
+            <h3 style="margin-bottom:15px; color:white;">📊 Оценка качества</h3>
+            <div class="score-circle" id="scoreCircle">
+                <span class="score-value" id="scoreValue">--</span>
+            </div>
+            <ul class="feedback-list" id="tipsList">
+                <!-- Tips will be injected here -->
+            </ul>
+        </div>
+
+        <!-- Right Column: Improved Prompt -->
+        <div>
+            <h3 style="margin-bottom:15px; color:white;">✨ Улучшенная версия</h3>
+            <textarea id="improvedOutput" readonly></textarea>
+            <div class="btn-group">
+                <button class="btn-copy" onclick="copyImproved()">
+                    📋 Скопировать результат
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        &copy; 2026 Asinhrom / Xcortex. Developed with passion for AI Engineering.
+    </footer>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
